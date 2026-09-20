@@ -7,9 +7,23 @@ export default function App() {
     '// Write your C++ code here\n#include <iostream>\n\nint main() {\n    std::cout << "Hello AI Assistant!";\n    return 0;\n}'
   );
 
-  const handleReviewRequest = () => {
-    // This string is what we will send to the Express backend in Phase 2
-    console.log("Submitting the following code for review:\n", code);
+  const [review, setReview] = useState("AI feedback and suggested fixes will appear here...");
+
+  const handleReviewRequest = async () => {
+    setReview("Analyzing code...");
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      
+      const data = await response.json();
+      setReview(data.review);
+    } catch (error) {
+      setReview("Error: Could not connect to the backend server.");
+    }
   };
 
   return (

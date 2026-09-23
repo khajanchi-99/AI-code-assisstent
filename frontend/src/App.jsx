@@ -2,7 +2,7 @@ import { useState } from 'react';
 import CodeEditor from './components/CodeEditor';
 
 export default function App() {
-  // Initialize state with some default C++ code
+  
   const [code, setCode] = useState(
     '// Write your C++ code here\n#include <iostream>\n\nint main() {\n    std::cout << "Hello AI Assistant!";\n    return 0;\n}'
   );
@@ -29,7 +29,7 @@ export default function App() {
   return (
     <div style={{ display: 'flex', height: '100vh', width: '100vw', backgroundColor: '#1e1e1e', color: '#fff' }}>
       
-      {/* Left Side: Code Editor */}
+
       <div style={{ width: '50%', borderRight: '1px solid #333', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '10px 15px', backgroundColor: '#252526', borderBottom: '1px solid #333', fontWeight: 'bold' }}>
           main.cpp
@@ -39,7 +39,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Right Side: AI Review Panel */}
+  
       <div style={{ width: '50%', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '10px 15px', backgroundColor: '#252526', borderBottom: '1px solid #333', fontWeight: 'bold' }}>
           AI Debugging Panel

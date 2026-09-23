@@ -7,23 +7,14 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-
-// --------------------------------------------------
-// Gemini Configuration
-// --------------------------------------------------
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
 const MODEL = "gemini-3.8-flash";
-
-// --------------------------------------------------
-// System Prompt
-// --------------------------------------------------
 
 const SYSTEM_PROMPT = `
 You are a Senior C++ Software Engineer and Code Reviewer.
@@ -52,10 +43,6 @@ Instructions:
 - Start directly with the code review.
 `;
 
-// --------------------------------------------------
-// Gemini Request With Retry
-// --------------------------------------------------
-
 async function generateWithRetry(prompt, maxRetries = 3) {
   let lastError;
 
@@ -79,8 +66,6 @@ async function generateWithRetry(prompt, maxRetries = 3) {
         error?.status || error?.message
       );
 
-      // Don't retry errors that are probably caused by
-      // an invalid request/API key/etc.
       const status = error?.status;
 
       const retryable =
@@ -94,15 +79,10 @@ async function generateWithRetry(prompt, maxRetries = 3) {
         throw error;
       }
 
-      // Don't wait after the final attempt
       if (attempt === maxRetries) {
         break;
       }
 
-      // Exponential backoff:
-      // 1 second
-      // 2 seconds
-      // 4 seconds
       const delay = 1000 * Math.pow(2, attempt);
 
       console.log(`Retrying in ${delay / 1000} seconds...`);
@@ -116,10 +96,6 @@ async function generateWithRetry(prompt, maxRetries = 3) {
   throw lastError;
 }
 
-// --------------------------------------------------
-// Health Check
-// --------------------------------------------------
-
 app.get("/", (req, res) => {
   res.json({
     message: "AI Code Assistant Backend is running",
@@ -127,21 +103,15 @@ app.get("/", (req, res) => {
   });
 });
 
-// --------------------------------------------------
-// Code Review API
-// --------------------------------------------------
-
 app.post("/api/review", async (req, res) => {
   const { code } = req.body;
 
-  // Validate request
   if (!code || typeof code !== "string") {
     return res.status(400).json({
       error: "No valid code provided",
     });
   }
 
-  // Optional protection against extremely large requests
   if (code.length > 100000) {
     return res.status(413).json({
       error: "Code is too large",
@@ -149,7 +119,6 @@ app.post("/api/review", async (req, res) => {
   }
 
   try {
-    // Build prompt
     const promptContext = `
 ${SYSTEM_PROMPT}
 
@@ -160,10 +129,8 @@ ${code}
 \`\`\`
 `;
 
-    // Call Gemini
     const response = await generateWithRetry(promptContext);
 
-    // Get generated text
     const review = response.text;
 
     if (!review) {
@@ -172,7 +139,6 @@ ${code}
       });
     }
 
-    // Send response to frontend
     res.json({
       success: true,
       review,
@@ -182,7 +148,6 @@ ${code}
 
     const status = error?.status;
 
-    // Handle common Gemini errors
     if (status === 429) {
       return res.status(429).json({
         error: "Gemini API rate limit reached. Please try again later.",
@@ -203,16 +168,11 @@ ${code}
       });
     }
 
-    // Generic error
     res.status(500).json({
       error: "Failed to generate code review.",
     });
   }
 });
-
-// --------------------------------------------------
-// Start Server
-// --------------------------------------------------
 
 const PORT = process.env.PORT || 5000;
 
